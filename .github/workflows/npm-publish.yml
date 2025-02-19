@@ -1,22 +1,33 @@
-name: Publish to npm
+name: 🚀 Publish to NPM
 
 on:
-  push:
-    branches:
-      - master
+  release:
+    types: [created]
 
 jobs:
-  publish:
+  publish-npm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
-      - run: npm install
-      - run: npm test
-      - run: npm run build
-      - run: npm publish
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+      - name: Get New Version from release
+        run: |
+          git fetch --tags
+          NEW_VERSION=$(git describe --tags --abbrev=0)
+          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+      - name: Install Dependencies 📦
+        run: npm install
+      - name: Build Package 🏗️
+        run: npm run build
+      - name: Update Package Version 📝
+        run: npm version ${NEW_VERSION} --no-git-tag-version
+      - name: Prepare Package for Publishing 📦
+        run: |
+          find . -mindepth 1 -maxdepth 1 ! -name 'package.json' ! -name 'README.md' ! -name 'node_modules' ! -name 'dist' -exec rm -rf {} +
+      - name: Publish Package 🚀
+        run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
