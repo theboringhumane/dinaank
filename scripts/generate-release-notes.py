@@ -6,7 +6,7 @@ import urllib.error
 def generate_release_notes():
     try:
         data = json.dumps({
-            "model": "claude-3.5-haiku",
+            "model": "gpt-4o-mini",
             "messages": [
                 {
                     "role": "system", 
