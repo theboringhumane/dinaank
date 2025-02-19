@@ -1,6 +1,6 @@
 {
   "name": "dinaank",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "main": "dist/dinaank.js",
   "module": "dist/dinaank.esm.js",
   "types": "dist/types/main.d.ts",
