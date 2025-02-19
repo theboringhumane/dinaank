@@ -34,13 +34,13 @@ export default {
     }),
     resolve(),
     commonjs(),
-    terser({
+    isProduction ? terser({
       compress: {
-        drop_console: isProduction,
+        drop_console: true,
         pure_funcs: ['console.log'],
       },
-    })
-  ]
+    }) : null
+  ].filter(Boolean)
 };
 
 console.log("File name: rollup.config.js, 🛠️📦, line 45, function: export default; isProduction:", isProduction);
