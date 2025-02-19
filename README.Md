@@ -192,6 +192,10 @@ Dinaank is more than code; it's poetry in motion, a ballet of bytes. It turns th
 
 So go forth, temporal artist! Paint your web pages with the brushstrokes of time itself. Let Dinaank be your muse, your stage, and your standing ovation.
 
+## 📜 License
+
+Dinaank is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 ---
 
 <sub>Crafted with ❤️ and a sprinkle of stardust by Harsh Vardhan Goswami. Under the benevolent gaze of the MIT License.</sub>

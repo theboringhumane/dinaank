@@ -4,6 +4,8 @@
   "main": "dist/dinaank.js",
   "module": "dist/dinaank.esm.js",
   "types": "dist/types/main.d.ts",
+  "author": "theboringhuman",
+  "license": "MIT",
   "scripts": {
     "build": "rollup -c --environment NODE_ENV:production",
     "test": "jest",
