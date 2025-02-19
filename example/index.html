@@ -2,32 +2,95 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dinaank.js</title>
+    <title>DateSelector Test</title>
+    <link rel="stylesheet" href="../dist/dinaank.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+      #date-selector-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      #selected-date {
+        margin-top: 20px;
+        font-weight: bold;
+      }
+    </style>
   </head>
   <body>
-    <div style="width: 100%; display: flex; flex-direction: row">
-      <div>
-        <input type="text" class="_date_picker_" />
-      </div>
+    <div id="date-selector-container">
+      <h2>Date Selector Test</h2>
+      <div id="date-selector-form">
+        <input type="text" name="date-selector" id="date-selector" />
+        <input type="text" name="date-selector-2" id="date-selector-2" />
+        <label for="date-selector-3">Time Selector</label>
+        <input type="text" name="date-selector-3" id="date-selector-3" />
+      </form>
+      <div id="selected-date"></div>
     </div>
 
-    <script src="https://unpkg.com/dinaank"></script>
+    <script src="../dist/dinaank.js" type="module"></script>
     <script>
-      new dinaank.dateSelector({
-        theme: "light",
-        el: "_date_picker_",
-        colors: {
-          hover: "rgb(0, 0, 0)",
-          active: "#000",
-          range: "rgba(91,91,91,0.13)",
-          rangeColor: "#000",
-        },
-        canSelectRange: true,
-        onChange: (date, rangeSelected) => {
-          console.log(date, rangeSelected);
-        },
+      document.addEventListener("DOMContentLoaded", () => {
+        const selectedDateDisplay = document.getElementById("selected-date");
+
+        const dateSelector = new window.Dinaank({
+          el: "#date-selector",
+          canSelectRange: true,
+          minDate: new Date("2024-11-01"),
+          maxDate: new Date("2024-11-30"),
+          theme: "dark",
+          colors: {
+            primary: "#000",
+            secondary: "#6c757d",
+            background: "#f8f9fa",
+          },
+          onChange: (selectedDate) => {
+            console.log(
+              "📅 test-date-selector.html, line 40, onChange; selectedDate:",
+              selectedDate
+            );
+            selectedDateDisplay.textContent = `Selected Date: ${selectedDate.toDateString()}`;
+          },
+        });
+
+
+        const dateSelector2 = new window.Dinaank({
+          el: "#date-selector-2",
+          onChange: (selectedDate) => {
+            console.log(
+          "🚀 test-date-selector.html, line 45, initial state; dateSelector:",
+              dateSelector2
+            );
+          },
+        });
+
+        const dateSelector3 =  new window.Dinaank({
+          el: "#date-selector-3",
+          enableTimeSelection: true,
+          timeFormat: "12h",
+          defaultTime: {
+            hours: 12,
+            minutes: 30,
+            seconds: 0,
+          },
+          onChange: (selectedDate, rangeSelected, selectedTime) => {
+            console.log(
+              "🚀 test-date-selector.html, line 45, initial state; dateSelector:",
+              selectedDate, rangeSelected, selectedTime, dateSelector3.getDateTime()
+            );
+          },
+        });
       });
     </script>
   </body>

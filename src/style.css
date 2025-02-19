@@ -9,6 +9,12 @@
   --_dis_color: rgba(204, 204, 204, 0.418);
   --in_range: rgba(31, 94, 255, 0.75);
   --range_color: #fff;
+  /* Time selector variables */
+  --_time_border: var(--_dis_bg);
+  --_time_bg: var(--_bg_color);
+  --_time_hover_bg: var(--_hover_bg);
+  --_time_active_bg: var(--_active_bg);
+  --_time_font: var(--_font_color);
 }
 
 ._calender_wrapper {
@@ -201,4 +207,83 @@
 ._previous_month_change_icon,
 ._next_month_change_icon {
   cursor: pointer;
+}
+
+/* Time selector styles */
+.dinaank-time-selector {
+  padding: 10px;
+  margin-top: 10px;
+  border-top: 1px solid var(--_time_border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dinaank-time-selector-inputs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--_time_font);
+  font-weight: 600;
+}
+
+.dinaank-time-input {
+  width: 50px;
+  padding: 6px;
+  border: 1px solid var(--_time_border);
+  border-radius: 6px;
+  background: var(--_time_bg);
+  color: var(--_time_font);
+  font-size: 14px;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.dinaank-time-input:focus {
+  outline: none;
+  border-color: var(--_time_active_bg);
+}
+
+.dinaank-time-input:hover {
+  border-color: var(--_time_active_bg);
+  background: var(--_time_hover_bg);
+  color: var(--_white_color);
+}
+
+.dinaank-time-input::-webkit-inner-spin-button,
+.dinaank-time-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.dinaank-time-period {
+  width: 60px;
+  padding: 6px;
+  border: 1px solid var(--_time_border);
+  border-radius: 6px;
+  background: var(--_time_bg);
+  color: var(--_time_font);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dinaank-time-period:focus {
+  outline: none;
+  border-color: var(--_time_active_bg);
+}
+
+.dinaank-time-period:hover {
+  border-color: var(--_time_active_bg);
+  background: var(--_time_hover_bg);
+  color: var(--_white_color);
+}
+
+.dinaank-time-period option {
+  background: var(--_calender_bg);
+  color: var(--_time_font);
+  font-weight: 600;
 }

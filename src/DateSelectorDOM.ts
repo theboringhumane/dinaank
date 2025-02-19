@@ -2,12 +2,17 @@ import { DateSelector } from "./DateSelector";
 import { RangeSelected } from "./types";
 import { toIntDate } from "./utils";
 
+const TIME_SELECTOR_CLASS = "dinaank-time-selector";
+const TIME_INPUT_CLASS = "dinaank-time-input";
+const TIME_PERIOD_CLASS = "dinaank-time-period";
+
 export class DateSelectorDOM {
   private dateSelector: DateSelector;
   private inputElement: HTMLInputElement;
   private parentElement: HTMLElement;
   public calendarDialog: HTMLDivElement;
   private yearsListView: HTMLDivElement;
+  private timeContainer: HTMLElement | null = null;
 
   constructor(dateSelector: DateSelector) {
     this.dateSelector = dateSelector;
@@ -24,6 +29,7 @@ export class DateSelectorDOM {
     this.parentElement = this.inputElement.parentElement as HTMLElement;
     this.calendarDialog = null as unknown as HTMLDivElement;
     this.yearsListView = null as unknown as HTMLDivElement;
+    this._setTimeStyles();
   }
 
   public createCalendarDialog(): void {
@@ -39,12 +45,18 @@ export class DateSelectorDOM {
     this.calendarDialog.appendChild(calendarContent);
     this.calendarDialog.appendChild(this.yearsListView);
     this.parentElement.appendChild(this.calendarDialog);
+
+    if (this.dateSelector.options.enableTimeSelection) {
+      this.timeContainer = this.createTimeSelector();
+      this.calendarDialog?.appendChild(this.timeContainer);
+    }
   }
 
   public updateCalendar(
     dates: Record<number, Date[]>,
     selectedDate: Date,
-    rangeSelected: RangeSelected
+    rangeSelected: RangeSelected,
+    selectedTime?: { hours: number; minutes: number; seconds: number }
   ): void {
     const monthYearElem = this.calendarDialog.querySelector(
       "._current_month_year"
@@ -88,7 +100,7 @@ export class DateSelectorDOM {
       });
     });
 
-    this._updateInputValue(selectedDate, rangeSelected);
+    this._updateInputValue(selectedDate, rangeSelected, selectedTime);
   }
 
   public attachEventListeners(handlers: {
@@ -267,7 +279,8 @@ export class DateSelectorDOM {
 
   private _updateInputValue(
     selectedDate: Date,
-    rangeSelected: RangeSelected
+    rangeSelected: RangeSelected,
+    selectedTime?: { hours: number; minutes: number; seconds: number }
   ): void {
     if (this.dateSelector.options.canSelectRange) {
       const startDate = rangeSelected.start
@@ -276,7 +289,13 @@ export class DateSelectorDOM {
       const endDate = rangeSelected.end ? toIntDate(rangeSelected.end) : "NA";
       this.inputElement.value = `${startDate} - ${endDate}`;
     } else {
-      this.inputElement.value = toIntDate(selectedDate);
+      this.inputElement.value = selectedTime
+        ? `${toIntDate(selectedDate)} ${
+            selectedTime?.hours ? selectedTime?.hours : "00"
+          }:${selectedTime?.minutes ? selectedTime?.minutes : "00"}:${
+            selectedTime?.seconds ? selectedTime?.seconds : "00"
+          }`
+        : `${toIntDate(selectedDate)}`;
     }
   }
 
@@ -315,5 +334,160 @@ export class DateSelectorDOM {
       dateSelectors.style.display = "grid";
       weekDays.style.display = "grid";
     }
+  }
+
+  private createTimeSelector(): HTMLElement {
+    const container = document.createElement("div");
+    container.className = TIME_SELECTOR_CLASS;
+
+    const timeInputs = document.createElement("div");
+    timeInputs.className = `${TIME_SELECTOR_CLASS}-inputs`;
+
+    // Hours input
+    const hoursInput = this.createTimeInput("hours", "00", "0", "23");
+    timeInputs.appendChild(hoursInput);
+    timeInputs.appendChild(document.createTextNode(":"));
+
+    // Minutes input
+    const minutesInput = this.createTimeInput("minutes", "00", "0", "59");
+    timeInputs.appendChild(minutesInput);
+    timeInputs.appendChild(document.createTextNode(":"));
+
+    // Seconds input
+    const secondsInput = this.createTimeInput("seconds", "00", "0", "59");
+    timeInputs.appendChild(secondsInput);
+
+    container.appendChild(timeInputs);
+
+    // Add AM/PM selector if using 12-hour format
+    if (this.dateSelector.options.timeFormat === "12h") {
+      const periodSelector = this.createPeriodSelector();
+      container.appendChild(periodSelector);
+    }
+
+    return container;
+  }
+
+  private createTimeInput(
+    type: string,
+    placeholder: string,
+    min: string,
+    max: string
+  ): HTMLInputElement {
+    const input = document.createElement("input");
+    input.type = "number";
+    input.className = TIME_INPUT_CLASS;
+    input.placeholder = placeholder;
+    input.min = min;
+    input.max = max;
+    input.addEventListener("change", (e) => {
+      const value = parseInt((e.target as HTMLInputElement).value, 10);
+      if (!isNaN(value)) {
+        this.dateSelector["_handleTimeChange"](type as any, value);
+      }
+    });
+    return input;
+  }
+
+  private createPeriodSelector(): HTMLSelectElement {
+    const select = document.createElement("select");
+    select.className = TIME_PERIOD_CLASS;
+
+    const amOption = document.createElement("option");
+    amOption.value = "AM";
+    amOption.textContent = "AM";
+
+    const pmOption = document.createElement("option");
+    pmOption.value = "PM";
+    pmOption.textContent = "PM";
+
+    select.appendChild(amOption);
+    select.appendChild(pmOption);
+
+    select.addEventListener("change", (e) => {
+      const isPM = (e.target as HTMLSelectElement).value === "PM";
+      const currentHours = this.dateSelector["_selectedTime"].hours;
+      let newHours = currentHours;
+
+      if (isPM && currentHours < 12) {
+        newHours = currentHours + 12;
+      } else if (!isPM && currentHours >= 12) {
+        newHours = currentHours - 12;
+      }
+
+      this.dateSelector["_handleTimeChange"]("hours", newHours);
+    });
+
+    return select;
+  }
+
+  private _setTimeStyles(): void {
+    const root = document.documentElement;
+
+    // Time selector container styles
+    root.style.setProperty("--time-selector-padding", "10px");
+    root.style.setProperty("--time-selector-margin-top", "10px");
+    root.style.setProperty(
+      "--time-selector-border-top",
+      "1px solid var(--_dis_bg)"
+    );
+
+    // Time input styles
+    root.style.setProperty("--time-input-width", "50px");
+    root.style.setProperty("--time-input-padding", "5px");
+    root.style.setProperty("--time-input-margin", "0 5px");
+    root.style.setProperty("--time-input-border", "1px solid var(--_dis_bg)");
+    root.style.setProperty("--time-input-border-radius", "4px");
+    root.style.setProperty("--time-input-background", "var(--_calender_bg)");
+    root.style.setProperty("--time-input-color", "var(--_font_color)");
+
+    // Period selector styles
+    root.style.setProperty("--time-period-width", "60px");
+    root.style.setProperty("--time-period-margin-left", "10px");
+    root.style.setProperty("--time-period-padding", "5px");
+    root.style.setProperty("--time-period-border", "1px solid var(--_dis_bg)");
+    root.style.setProperty("--time-period-border-radius", "4px");
+    root.style.setProperty("--time-period-background", "var(--_calender_bg)");
+    root.style.setProperty("--time-period-color", "var(--_font_color)");
+
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = `
+      .${TIME_SELECTOR_CLASS} {
+        padding: var(--time-selector-padding);
+        margin-top: var(--time-selector-margin-top);
+        border-top: var(--time-selector-border-top);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .${TIME_INPUT_CLASS} {
+        width: var(--time-input-width);
+        padding: var(--time-input-padding);
+        margin: var(--time-input-margin);
+        border: var(--time-input-border);
+        border-radius: var(--time-input-border-radius);
+        background: var(--time-input-background);
+        color: var(--time-input-color);
+        text-align: center;
+      }
+
+      .${TIME_INPUT_CLASS}::-webkit-inner-spin-button,
+      .${TIME_INPUT_CLASS}::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .${TIME_PERIOD_CLASS} {
+        width: var(--time-period-width);
+        margin-left: var(--time-period-margin-left);
+        padding: var(--time-period-padding);
+        border: var(--time-period-border);
+        border-radius: var(--time-period-border-radius);
+        background: var(--time-period-background);
+        color: var(--time-period-color);
+      }
+    `;
+    document.head.appendChild(styleSheet);
   }
 }

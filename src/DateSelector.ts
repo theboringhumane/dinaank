@@ -4,7 +4,7 @@ import { generateUniqueId, defaults } from "./utils";
 
 enum SelectionMode {
   Single,
-  Range
+  Range,
 }
 
 export class DateSelector {
@@ -15,14 +15,25 @@ export class DateSelector {
   private rangeSelected!: RangeSelected;
   private dates!: Record<number, Date[]>;
   private selectionMode: SelectionMode;
+  private _selectedTime: { hours: number; minutes: number; seconds: number };
 
   constructor(options: Partial<DateSelectorOptions>) {
     this.id = generateUniqueId();
     this.options = { ...defaults(), ...options };
-    this.dom = new DateSelectorDOM(this);
-    this.selectionMode = this.options.canSelectRange ? SelectionMode.Range : SelectionMode.Single;
-
+    this._selectedTime = {
+      hours: this.options.defaultTime?.hours || 0,
+      minutes: this.options.defaultTime?.minutes || 0,
+      seconds: this.options.defaultTime?.seconds || 0,
+    };
+    this.selectionMode = this.options.canSelectRange
+      ? SelectionMode.Range
+      : SelectionMode.Single;
     this._initializeState();
+    this.dom = new DateSelectorDOM(this);
+    console.log(
+      "📅 src/DateSelector.ts, constructor; this.options:",
+      this.options
+    );
     this._initializeDOM();
     this._setColorTheme();
     this._attachEventListeners();
@@ -40,9 +51,18 @@ export class DateSelector {
   }
 
   private _initializeState(): void {
-    this._daySelected = new Date();
+    this._daySelected = this.options.currentDate
+      ? new Date(this.options.currentDate)
+      : new Date();
+    if (this.options.enableTimeSelection) {
+      this._selectedTime = {
+        hours: this._daySelected.getHours(),
+        minutes: this._daySelected.getMinutes(),
+        seconds: this._daySelected.getSeconds(),
+      };
+    }
     console.log(
-      "📅 src/DateSelector.ts, line 30, _initializeState; _daySelected:",
+      "📅 src/DateSelector.ts, _initializeState; _daySelected:",
       this._daySelected
     );
     this.rangeSelected = { start: null, end: null };
@@ -51,7 +71,7 @@ export class DateSelector {
 
   private _initializeDOM(): void {
     this.dom.createCalendarDialog();
-    this.dom.updateCalendar(this.dates, this._daySelected, this.rangeSelected);
+    this.dom.updateCalendar(this.dates, this._daySelected, this.rangeSelected, this.options.enableTimeSelection ? this._selectedTime : undefined);
   }
 
   private _attachEventListeners(): void {
@@ -106,8 +126,14 @@ export class DateSelector {
   }
 
   private _handleOutsideClick(event: MouseEvent): void {
-    console.log("📅 src/DateSelector.ts, line 98, _handleOutsideClick; event:", event.target);
-    console.log("📅 src/DateSelector.ts, line 99, _handleOutsideClick; this.dom.isPartOfCalendar(event.target as HTMLElement):", this.dom.isPartOfCalendar(event.target as HTMLElement));
+    console.log(
+      "📅 src/DateSelector.ts, line 98, _handleOutsideClick; event:",
+      event.target
+    );
+    console.log(
+      "📅 src/DateSelector.ts, line 99, _handleOutsideClick; this.dom.isPartOfCalendar(event.target as HTMLElement):",
+      this.dom.isPartOfCalendar(event.target as HTMLElement)
+    );
     if (!this.dom.isPartOfCalendar(event.target as HTMLElement)) {
       this.dom.hideCalendar();
     }
@@ -115,12 +141,16 @@ export class DateSelector {
 
   private _updateCalendar(): void {
     this.dates = this._generateWeeksDaysDates();
-    this.dom.updateCalendar(this.dates, this._daySelected, this.rangeSelected);
+    this.dom.updateCalendar(this.dates, this._daySelected, this.rangeSelected, this.options.enableTimeSelection ? this._selectedTime : undefined);
   }
 
   private _triggerOnChange(): void {
     if (typeof this.options.onChange === "function") {
-      this.options.onChange(this._daySelected, this.rangeSelected);
+      this.options.onChange(
+        this._daySelected,
+        this.rangeSelected,
+        this._selectedTime
+      );
     }
   }
 
@@ -198,7 +228,7 @@ export class DateSelector {
     // Set range dates bg color
     root.style.setProperty(
       "--in_range",
-      colors?.range || 
+      colors?.range ||
         (theme === "dark" ? "rgba(31,94,255,0.35)" : "rgba(244,81,30,0.35)")
     );
 
@@ -227,16 +257,54 @@ export class DateSelector {
       theme === "dark" ? "rgba(204, 204, 204, 0.418)" : "rgba(0, 0, 0, 0.38)"
     );
 
-    console.log("🎨 src/DateSelector.ts, line 80, _setColorTheme; Applied colors:", {
-      bg: root.style.getPropertyValue("--_bg_color"),
-      calendarBg: root.style.getPropertyValue("--_calender_bg"),
-      hover: root.style.getPropertyValue("--_hover_bg"),
-      active: root.style.getPropertyValue("--_active_bg"),
-      range: root.style.getPropertyValue("--in_range"),
-      rangeColor: root.style.getPropertyValue("--range_color"),
-      font: root.style.getPropertyValue("--_font_color"),
-      disabledBg: root.style.getPropertyValue("--_dis_bg"),
-      disabledColor: root.style.getPropertyValue("--_dis_color")
-    });
+    console.log(
+      "🎨 src/DateSelector.ts, line 80, _setColorTheme; Applied colors:",
+      {
+        bg: root.style.getPropertyValue("--_bg_color"),
+        calendarBg: root.style.getPropertyValue("--_calender_bg"),
+        hover: root.style.getPropertyValue("--_hover_bg"),
+        active: root.style.getPropertyValue("--_active_bg"),
+        range: root.style.getPropertyValue("--in_range"),
+        rangeColor: root.style.getPropertyValue("--range_color"),
+        font: root.style.getPropertyValue("--_font_color"),
+        disabledBg: root.style.getPropertyValue("--_dis_bg"),
+        disabledColor: root.style.getPropertyValue("--_dis_color"),
+      }
+    );
+  }
+
+  public setTime(hours: number, minutes: number, seconds: number = 0): void {
+    this._selectedTime = { hours, minutes, seconds };
+    this._updateSelectedDateTime();
+    this._triggerOnChange();
+    this._updateCalendar();
+  }
+
+  private _updateSelectedDateTime(): void {
+    const newDate = new Date(this._daySelected);
+    newDate.setHours(this._selectedTime.hours);
+    newDate.setMinutes(this._selectedTime.minutes);
+    newDate.setSeconds(this._selectedTime.seconds);
+    this._daySelected = newDate;
+  }
+
+  private _handleTimeChange(
+    type: "hours" | "minutes" | "seconds",
+    value: number
+  ): void {
+    this._selectedTime[type] = value;
+    this._updateSelectedDateTime();
+    this._triggerOnChange();
+    this._updateCalendar();
+  }
+
+  public getDateTime(): Date {
+    return new Date(
+      this._daySelected.setHours(
+        this._selectedTime.hours,
+        this._selectedTime.minutes,
+        this._selectedTime.seconds
+      )
+    );
   }
 }
