@@ -12,15 +12,15 @@ export interface DateSelectorOptions {
       range?: string;
       rangeColor?: string;
     };
-    weekdays?: string[];
-    months?: string[];
-    currentDate?: Date;
-    enableTimeSelection?: boolean;
-    timeFormat?: '12h' | '24h';
+    weekdays?: string[]; // eg. ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+    months?: string[]; // eg. ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    currentDate?: Date; // eg. new Date()
+    enableTimeSelection?: boolean; // eg. true
+    timeFormat?: '12h' | '24h'; // eg. '12h'
     defaultTime?: {
-      hours?: number;
-      minutes?: number;
-      seconds?: number;
+      hours?: number; // eg. 12
+      minutes?: number; // eg. 30
+      seconds?: number; // eg. 0
     };
 }
 

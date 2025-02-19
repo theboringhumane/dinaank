@@ -4,7 +4,7 @@ Imagine a world where selecting dates isn't a chore, but a delightful dance of d
 
 ## 🎭 A Calendar's Soliloquy
 
-Dinaank doesn't just appear; it performs. With a flourish, a calendar materializes before your eyes. You, the director, simply point to a date, and the show concludes. Bravo! 👏
+Dinaank doesn't just appear; it performs. With a flourish, a calendar materializes before your eyes, complete with time selection capabilities. You, the director, simply point to a date and time, and the show concludes. Bravo! 👏
 
 <div style="display: flex; justify-content: space-around;">
   <img src="https://raw.githubusercontent.com/iamharshdev/dinaank/master/screenshots/Screenshot_4.png" width="30%">
@@ -19,6 +19,7 @@ Dinaank doesn't just appear; it performs. With a flourish, a calendar materializ
 Summon Dinaank with a mere whisper in your HTML's head:
 
 ```html
+<link rel="stylesheet" href="https://unpkg.com/dinaank/dist/dinaank.css" />
 <script src="https://unpkg.com/dinaank"></script>
 ```
 
@@ -34,20 +35,44 @@ yarn add dinaank     # The yarn enchantment
 Dinaank is your canvas, and dates are your palette. Let's create a masterpiece:
 
 ```js
-const timePainter = new Dinaank({
-  el: '.canvas_of_time',
-  onChange: (chosenMoment) => {
-    console.log(`A moment in time was captured: ${chosenMoment}`);
+// Basic Date Selector
+const simplePicker = new Dinaank({
+  el: '#date-selector',
+  onChange: (selectedDate) => {
+    console.log(`A moment in time was captured: ${selectedDate}`);
   },
   theme: 'dark',  // For those who paint with starlight
   colors: {
-    hover: 'cyan',    // The shimmer of possibility
-    active: 'blue',   // The depth of decision
+    hover: 'rgb(0, 0, 0)',
+    active: '#000',
+    range: 'rgba(91,91,91,0.13)',
+    rangeColor: '#000',
+  }
+});
+
+// Date Range Selector
+const rangePicker = new Dinaank({
+  el: '#date-range-selector',
+  canSelectRange: true,
+  onChange: (selectedDate, rangeSelected) => {
+    console.log(`Range selected: ${rangeSelected.start} to ${rangeSelected.end}`);
+  }
+});
+
+// Date & Time Selector
+const dateTimePicker = new Dinaank({
+  el: '#date-time-selector',
+  enableTimeSelection: true,
+  timeFormat: '12h', // or '24h'
+  defaultTime: {
+    hours: 12,
+    minutes: 30,
+    seconds: 0
   },
-  startYear: 1992,    // Begin your journey
-  endYear: 2045,      // ...and where it might lead
-  minDate: new Date('2024-01-01'), // Create a safe haven in the timestream
-  maxDate: new Date('2024-12-31'), // ...and where it might lead
+  onChange: (selectedDate, rangeSelected, selectedTime) => {
+    console.log('Selected DateTime:', selectedDate);
+    console.log('Selected Time:', selectedTime);
+  }
 });
 ```
 
@@ -57,14 +82,113 @@ Dinaank isn't just a date picker; it's a time traveler's toolkit:
 
 - **🎨 Themes**: Light for sun-chasers, dark for night owls
 - **📅 Custom Ranges**: Set the boundaries of your temporal playground
-- **🎉 Events**: Mark the days that sparkle with significance
+- **🕒 Time Selection**: Choose your moment down to the second
 - **🔒 Min/Max Dates**: Create a safe haven in the timestream
-- **🌍 Localization**: Speak the language of time in any tongue
 - **↔️ Date Ranges**: For those who think in spans, not points
+- **⏰ Time Formats**: 12-hour or 24-hour, you decide
+- **🎯 Default Values**: Start with your preferred time of day
+
+## 🎭 Configuration Options
+
+```typescript
+interface DateSelectorOptions {
+  el: string;                    // Target element selector (required) (eg. "#date-selector", ".canvas_of_time", etc.)
+  canSelectRange?: boolean;      // Enable range selection
+  closeOnSelect?: boolean;       // Close picker after selection
+  theme?: 'light' | 'dark';      // Color theme
+  colors?: {                     // Custom colors
+    hover?: string;
+    active?: string;
+    range?: string;
+    rangeColor?: string;
+  }; // eg. { hover: 'rgb(0, 0, 0)', active: '#000', range: 'rgba(91,91,91,0.13)', rangeColor: '#000' }
+  enableTimeSelection?: boolean; // Enable time picker (eg. true)
+  timeFormat?: '12h' | '24h';   // Time format (eg. '12h' or '24h')
+  defaultTime?: {               // Default time values
+    hours?: number; // eg. 12
+    minutes?: number; // eg. 30
+    seconds?: number; // eg. 0
+  };
+  minDate?: Date;               // Minimum selectable date (eg. new Date())
+  maxDate?: Date;               // Maximum selectable date (eg. new Date())
+  currentDate?: Date;           // Initial selected date (eg. new Date())
+  onChange?: (                  // Selection callback
+    selectedDate: Date,
+    rangeSelected: { start: Date | null, end: Date | null },
+    selectedTime?: { hours: number, minutes: number, seconds: number }
+  ) => void; // eg. (selectedDate: Date, rangeSelected: { start: Date | null, end: Date | null }, selectedTime: { hours: number, minutes: number, seconds: number }) => void,
+  weekdays?: string[]; // eg. ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+  months?: string[]; // eg. ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+}
+```
+
+## 🎮 Public Methods
+
+Dinaank provides several public methods to control and interact with the date picker programmatically:
+
+### Date & Time Control
+
+```typescript
+// Set minimum and maximum selectable dates
+datePicker.setMinMaxDate(minDate: Date, maxDate: Date): void;
+
+// Set time values manually
+datePicker.setTime(hours: number, minutes: number, seconds: number = 0): void;
+
+// Get the complete selected date and time
+datePicker.getDateTime(): Date;
+
+// Change the theme dynamically
+datePicker.setTheme(theme: "dark" | "light"): void;
+
+// Clean up resources when no longer needed
+datePicker.destroy(): void;
+```
+
+### Method Details
+
+#### `setMinMaxDate(minDate: Date, maxDate: Date)`
+Sets the minimum and maximum selectable dates in the calendar.
+```javascript
+// Example: Limit selection to the current month
+const now = new Date();
+const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+datePicker.setMinMaxDate(firstDay, lastDay);
+```
+
+#### `setTime(hours: number, minutes: number, seconds: number = 0)`
+Programmatically set the time portion of the selected date.
+```javascript
+// Example: Set time to 2:30 PM
+datePicker.setTime(14, 30, 0);
+```
+
+#### `getDateTime()`
+Returns the complete Date object with both date and time components.
+```javascript
+// Example: Get the full selected date and time
+const selectedDateTime = datePicker.getDateTime();
+console.log(selectedDateTime.toLocaleString());
+```
+
+#### `setTheme(theme: "dark" | "light")`
+Dynamically switch between dark and light themes.
+```javascript
+// Example: Switch to dark theme
+datePicker.setTheme("dark");
+```
+
+#### `destroy()`
+Clean up the date picker and remove event listeners.
+```javascript
+// Example: Remove the date picker when no longer needed
+datePicker.destroy();
+```
 
 ## 🎭 The Final Act
 
-Dinaank is more than code; it's poetry in motion, a ballet of bytes. It turns the mundane act of choosing a date into a celebration of possibility.
+Dinaank is more than code; it's poetry in motion, a ballet of bytes. It turns the mundane act of choosing a date and time into a celebration of possibility.
 
 So go forth, temporal artist! Paint your web pages with the brushstrokes of time itself. Let Dinaank be your muse, your stage, and your standing ovation.
 
