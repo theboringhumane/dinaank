@@ -11,11 +11,12 @@ export class DateSelector {
   id: string;
   options: DateSelectorOptions;
   private dom: DateSelectorDOM;
-  private _daySelected!: Date | null;
-  private rangeSelected!: RangeSelected;
+  private _daySelected: Date | undefined = undefined;
+  private rangeSelected: RangeSelected = { start: undefined, end: undefined };
   private dates!: Record<number, Date[]>;
   private selectionMode: SelectionMode;
   private _selectedTime: { hours: number; minutes: number; seconds: number };
+  private _calendarDate: Date = new Date();
 
   constructor(options: Partial<DateSelectorOptions>) {
     this.id = generateUniqueId();
@@ -51,9 +52,21 @@ export class DateSelector {
   }
 
   private _initializeState(): void {
-    if (this.options.currentDate) {
-      this._daySelected = new Date(this.options.currentDate);
+    const today = new Date();
+    this._calendarDate = today;
+
+    if (
+      this.options.currentDate &&
+      this.options.currentDate !== "" &&
+      this.options.currentDate !== " "
+    ) {
+      this._daySelected =
+        typeof this.options.currentDate === "string"
+          ? new Date(this.options.currentDate)
+          : this.options.currentDate;
+      this._calendarDate = new Date(this._daySelected);
     }
+
     if (this.options.enableTimeSelection) {
       this._selectedTime = {
         hours: this._daySelected?.getHours() || 0,
@@ -61,11 +74,8 @@ export class DateSelector {
         seconds: this._daySelected?.getSeconds() || 0,
       };
     }
-    console.log(
-      "📅 src/DateSelector.ts, _initializeState; _daySelected:",
-      this._daySelected
-    );
-    this.rangeSelected = { start: null, end: null };
+
+    this.rangeSelected = { start: undefined, end: undefined };
     this.dates = this._generateWeeksDaysDates();
   }
 
@@ -104,6 +114,7 @@ export class DateSelector {
   private _handleRangeSelection(date: Date): void {
     if (!this.rangeSelected.start) {
       this.rangeSelected.start = date;
+      this._calendarDate = new Date(date);
     } else if (!this.rangeSelected.end) {
       this.rangeSelected.end = date;
       if (this.rangeSelected.start > this.rangeSelected.end) {
@@ -112,23 +123,23 @@ export class DateSelector {
           this.rangeSelected.start,
         ];
       }
+      this._calendarDate = new Date(date);
     } else {
-      this.rangeSelected = { start: date, end: null };
+      this.rangeSelected = { start: date, end: undefined };
+      this._calendarDate = new Date(date);
     }
-    // Calendar remains open for range selection
+    this._updateCalendar();
   }
 
   private _handleMonthChange(change: number): void {
-    if (!this._daySelected) return;
-    const newDate = new Date(this._daySelected);
+    const newDate = new Date(this._calendarDate);
     newDate.setMonth(newDate.getMonth() + change);
-    this._daySelected = newDate;
+    this._calendarDate = newDate;
     this._updateCalendar();
   }
 
   private _handleYearChange(year: number): void {
-    if (!this._daySelected) return;
-    this._daySelected.setFullYear(year);
+    this._calendarDate.setFullYear(year);
     this._updateCalendar();
   }
 
@@ -168,9 +179,8 @@ export class DateSelector {
 
   private _generateWeeksDaysDates(): Record<number, Date[]> {
     const weekDates: Record<number, Date[]> = {};
-    const year = this._daySelected?.getFullYear();
-    const month = this._daySelected?.getMonth();
-    if (!year || !month) return weekDates;
+    const year = this._calendarDate.getFullYear();
+    const month = this._calendarDate.getMonth();
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
 
@@ -217,13 +227,15 @@ export class DateSelector {
     // Set calendar widget bg color
     root.style.setProperty(
       "--_bg_color",
-      theme === "dark" ? "#3c414a" : "rgb(245, 245, 245)"
+      colors?.background ||
+        (theme === "dark" ? "#3c414a" : "rgb(255, 255, 255)")
     );
 
     // Set _calender_bg color
     root.style.setProperty(
       "--_calender_bg",
-      theme === "dark" ? "#323741" : "rgb(245, 245, 245)"
+      colors?.background ||
+        (theme === "dark" ? "#323741" : "rgb(255, 255, 255)")
     );
 
     // Set hover elems bg color

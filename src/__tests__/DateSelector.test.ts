@@ -56,10 +56,10 @@ describe("DateSelector", () => {
     dateSelector.setTheme("light");
 
     expect(rootElement.style.getPropertyValue("--_bg_color")).toBe(
-      "rgb(245, 245, 245)"
+      "rgb(255, 255, 255)"
     );
     expect(rootElement.style.getPropertyValue("--_calender_bg")).toBe(
-      "rgb(245, 245, 245)"
+      "rgb(255, 255, 255)"
     );
     expect(rootElement.style.getPropertyValue("--_font_color")).toBe("#333333");
     expect(rootElement.style.getPropertyValue("--_active_bg")).toBe("#f4511e");

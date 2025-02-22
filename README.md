@@ -101,7 +101,8 @@ interface DateSelectorOptions {
     active?: string;
     range?: string;
     rangeColor?: string;
-  }; // eg. { hover: 'rgb(0, 0, 0)', active: '#000', range: 'rgba(91,91,91,0.13)', rangeColor: '#000' }
+    background?: string;
+  }; // eg. { hover: 'rgb(0, 0, 0)', active: '#000', range: 'rgba(91,91,91,0.13)', rangeColor: '#000', background: 'rgb(255, 255, 255)' }
   enableTimeSelection?: boolean; // Enable time picker (eg. true)
   timeFormat?: '12h' | '24h';   // Time format (eg. '12h' or '24h')
   defaultTime?: {               // Default time values
@@ -114,9 +115,9 @@ interface DateSelectorOptions {
   currentDate?: Date;           // Initial selected date (eg. new Date())
   onChange?: (                  // Selection callback
     selectedDate: Date,
-    rangeSelected: { start: Date | null, end: Date | null },
+    rangeSelected: { start: Date | undefined, end: Date | undefined },
     selectedTime?: { hours: number, minutes: number, seconds: number }
-  ) => void; // eg. (selectedDate: Date, rangeSelected: { start: Date | null, end: Date | null }, selectedTime: { hours: number, minutes: number, seconds: number }) => void,
+  ) => void; // eg. (selectedDate: Date, rangeSelected: { start: Date | undefined, end: Date | undefined }, selectedTime: { hours: number, minutes: number, seconds: number }) => void,
   weekdays?: string[]; // eg. ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
   months?: string[]; // eg. ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 }

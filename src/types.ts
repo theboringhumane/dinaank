@@ -2,7 +2,7 @@ export interface DateSelectorOptions {
     el: string;
     canSelectRange?: boolean;
     closeOnSelect?: boolean;
-    onChange?: (selectedDate: Date | null, rangeSelected: RangeSelected, selectedTime: { hours: number, minutes: number, seconds: number }) => void;
+    onChange?: (selectedDate: Date | undefined, rangeSelected: RangeSelected, selectedTime: { hours: number, minutes: number, seconds: number }) => void;
     minDate?: Date;
     maxDate?: Date;
     theme?: 'light' | 'dark';
@@ -11,10 +11,11 @@ export interface DateSelectorOptions {
       active?: string;
       range?: string;
       rangeColor?: string;
+      background?: string;
     };
     weekdays?: string[]; // eg. ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
     months?: string[]; // eg. ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-    currentDate?: Date; // eg. new Date()
+    currentDate?: Date | string; // eg. new Date()
     enableTimeSelection?: boolean; // eg. true
     timeFormat?: '12h' | '24h'; // eg. '12h'
     defaultTime?: {
@@ -25,6 +26,6 @@ export interface DateSelectorOptions {
 }
 
 export interface RangeSelected {
-    start: Date | null;
-    end: Date | null;
+    start: Date | undefined;
+    end: Date | undefined;
 }

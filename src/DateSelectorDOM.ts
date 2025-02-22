@@ -54,7 +54,7 @@ export class DateSelectorDOM {
 
   public updateCalendar(
     dates: Record<number, Date[]>,
-    selectedDate: Date | null,
+    selectedDate: Date | undefined,
     rangeSelected: RangeSelected,
     selectedTime?: { hours: number; minutes: number; seconds: number }
   ): void {
@@ -62,8 +62,8 @@ export class DateSelectorDOM {
       "._current_month_year"
     ) as HTMLElement;
     monthYearElem.textContent = `${this._getMonthName(
-      selectedDate?.getMonth() || 0
-    )} ${selectedDate?.getFullYear() || 0}`;
+      this.dateSelector['_calendarDate'].getMonth()
+    )} ${this.dateSelector['_calendarDate'].getFullYear()}`;
 
     const datesContainer = this.calendarDialog.querySelector(
       "._date_selectors"
@@ -254,18 +254,16 @@ export class DateSelectorDOM {
 
   private _isDateSelected(
     date: Date,
-    selectedDate: Date | null,
+    selectedDate: Date | undefined,
     rangeSelected: RangeSelected
   ): boolean {
     if (this.dateSelector.options.canSelectRange) {
       return Boolean(
-        (rangeSelected.start &&
-          date.getTime() === rangeSelected.start.getTime()) ||
-          (rangeSelected.end && date.getTime() === rangeSelected.end.getTime())
+        (rangeSelected.start && date.getTime() === rangeSelected.start.getTime()) ||
+        (rangeSelected.end && date.getTime() === rangeSelected.end.getTime())
       );
-    } else {
-      return date.getTime() === selectedDate?.getTime();
     }
+    return Boolean(selectedDate && date.getTime() === selectedDate.getTime());
   }
 
   private _isDateInRange(date: Date, rangeSelected: RangeSelected): boolean {
@@ -274,32 +272,43 @@ export class DateSelectorDOM {
       rangeSelected.start &&
       rangeSelected.end
     ) {
-      return date > rangeSelected.start && date < rangeSelected.end;
+      const time = date.getTime();
+      return time > rangeSelected.start.getTime() && 
+             time < rangeSelected.end.getTime();
     }
     return false;
   }
 
   private _updateInputValue(
-    selectedDate: Date | null,
+    selectedDate: Date | undefined,
     rangeSelected: RangeSelected,
     selectedTime?: { hours: number; minutes: number; seconds: number }
   ): void {
     if (this.dateSelector.options.canSelectRange) {
       const startDate = rangeSelected.start
         ? toIntDate(rangeSelected.start)
-        : "NA";
-      const endDate = rangeSelected.end ? toIntDate(rangeSelected.end) : "NA";
+        : "N/A";
+      const endDate = rangeSelected.end 
+        ? toIntDate(rangeSelected.end) 
+        : "N/A";
       this.inputElement.value = `${startDate} - ${endDate}`;
-    } else if (selectedDate) {
-      this.inputElement.value = selectedDate
-        ? `${toIntDate(selectedDate)} ${
-            selectedTime?.hours ? selectedTime?.hours : "00"
-          }:${selectedTime?.minutes ? selectedTime?.minutes : "00"}:${
-            selectedTime?.seconds ? selectedTime?.seconds : "00"
-          }`
-        : `${toIntDate(selectedDate)}`;
     } else {
-      this.inputElement.value = "N/A";
+      if (!selectedDate) {
+        this.inputElement.value = "N/A";
+        return;
+      }
+      
+      if (this.dateSelector.options.enableTimeSelection) {
+        this.inputElement.value = `${toIntDate(selectedDate)} ${
+          selectedTime?.hours?.toString().padStart(2, '0') || "00"
+        }:${
+          selectedTime?.minutes?.toString().padStart(2, '0') || "00"
+        }:${
+          selectedTime?.seconds?.toString().padStart(2, '0') || "00"
+        }`;
+      } else {
+        this.inputElement.value = toIntDate(selectedDate);
+      }
     }
   }
 
