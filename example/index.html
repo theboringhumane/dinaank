@@ -44,7 +44,7 @@
       document.addEventListener("DOMContentLoaded", () => {
         const selectedDateDisplay = document.getElementById("selected-date");
 
-        const dateSelector = new window.Dinaank({
+        const dateSelector = new Dinaank({
           el: "#date-selector",
           canSelectRange: true,
           minDate: new Date("2024-11-01"),
@@ -65,7 +65,7 @@
         });
 
 
-        const dateSelector2 = new window.Dinaank({
+        const dateSelector2 = new Dinaank({
           el: "#date-selector-2",
           onChange: (selectedDate) => {
             console.log(
@@ -75,7 +75,7 @@
           },
         });
 
-        const dateSelector3 =  new window.Dinaank({
+        const dateSelector3 =  new Dinaank({
           el: "#date-selector-3",
           enableTimeSelection: true,
           timeFormat: "12h",

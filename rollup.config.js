@@ -13,7 +13,7 @@ export default {
     {
       file: 'dist/dinaank.js',
       format: 'umd',
-      name: 'Dinaank'
+      name: 'Dinaank',
     },
     {
       file: 'dist/dinaank.esm.js',
