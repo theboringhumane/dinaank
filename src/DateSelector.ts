@@ -11,7 +11,7 @@ export class DateSelector {
   id: string;
   options: DateSelectorOptions;
   private dom: DateSelectorDOM;
-  private _daySelected!: Date;
+  private _daySelected!: Date | null;
   private rangeSelected!: RangeSelected;
   private dates!: Record<number, Date[]>;
   private selectionMode: SelectionMode;
@@ -51,14 +51,14 @@ export class DateSelector {
   }
 
   private _initializeState(): void {
-    this._daySelected = this.options.currentDate
-      ? new Date(this.options.currentDate)
-      : new Date();
+    if (this.options.currentDate) {
+      this._daySelected = new Date(this.options.currentDate);
+    }
     if (this.options.enableTimeSelection) {
       this._selectedTime = {
-        hours: this._daySelected.getHours(),
-        minutes: this._daySelected.getMinutes(),
-        seconds: this._daySelected.getSeconds(),
+        hours: this._daySelected?.getHours() || 0,
+        minutes: this._daySelected?.getMinutes() || 0,
+        seconds: this._daySelected?.getSeconds() || 0,
       };
     }
     console.log(
@@ -71,7 +71,12 @@ export class DateSelector {
 
   private _initializeDOM(): void {
     this.dom.createCalendarDialog();
-    this.dom.updateCalendar(this.dates, this._daySelected, this.rangeSelected, this.options.enableTimeSelection ? this._selectedTime : undefined);
+    this.dom.updateCalendar(
+      this.dates,
+      this._daySelected,
+      this.rangeSelected,
+      this.options.enableTimeSelection ? this._selectedTime : undefined
+    );
   }
 
   private _attachEventListeners(): void {
@@ -114,6 +119,7 @@ export class DateSelector {
   }
 
   private _handleMonthChange(change: number): void {
+    if (!this._daySelected) return;
     const newDate = new Date(this._daySelected);
     newDate.setMonth(newDate.getMonth() + change);
     this._daySelected = newDate;
@@ -121,6 +127,7 @@ export class DateSelector {
   }
 
   private _handleYearChange(year: number): void {
+    if (!this._daySelected) return;
     this._daySelected.setFullYear(year);
     this._updateCalendar();
   }
@@ -141,7 +148,12 @@ export class DateSelector {
 
   private _updateCalendar(): void {
     this.dates = this._generateWeeksDaysDates();
-    this.dom.updateCalendar(this.dates, this._daySelected, this.rangeSelected, this.options.enableTimeSelection ? this._selectedTime : undefined);
+    this.dom.updateCalendar(
+      this.dates,
+      this._daySelected,
+      this.rangeSelected,
+      this.options.enableTimeSelection ? this._selectedTime : undefined
+    );
   }
 
   private _triggerOnChange(): void {
@@ -156,8 +168,9 @@ export class DateSelector {
 
   private _generateWeeksDaysDates(): Record<number, Date[]> {
     const weekDates: Record<number, Date[]> = {};
-    const year = this._daySelected.getFullYear();
-    const month = this._daySelected.getMonth();
+    const year = this._daySelected?.getFullYear();
+    const month = this._daySelected?.getMonth();
+    if (!year || !month) return weekDates;
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
 
@@ -281,6 +294,7 @@ export class DateSelector {
   }
 
   private _updateSelectedDateTime(): void {
+    if (!this._daySelected) return;
     const newDate = new Date(this._daySelected);
     newDate.setHours(this._selectedTime.hours);
     newDate.setMinutes(this._selectedTime.minutes);
@@ -299,6 +313,7 @@ export class DateSelector {
   }
 
   public getDateTime(): Date {
+    if (!this._daySelected) return new Date();
     return new Date(
       this._daySelected.setHours(
         this._selectedTime.hours,

@@ -54,7 +54,7 @@ export class DateSelectorDOM {
 
   public updateCalendar(
     dates: Record<number, Date[]>,
-    selectedDate: Date,
+    selectedDate: Date | null,
     rangeSelected: RangeSelected,
     selectedTime?: { hours: number; minutes: number; seconds: number }
   ): void {
@@ -62,8 +62,8 @@ export class DateSelectorDOM {
       "._current_month_year"
     ) as HTMLElement;
     monthYearElem.textContent = `${this._getMonthName(
-      selectedDate.getMonth()
-    )} ${selectedDate.getFullYear()}`;
+      selectedDate?.getMonth() || 0
+    )} ${selectedDate?.getFullYear() || 0}`;
 
     const datesContainer = this.calendarDialog.querySelector(
       "._date_selectors"
@@ -254,7 +254,7 @@ export class DateSelectorDOM {
 
   private _isDateSelected(
     date: Date,
-    selectedDate: Date,
+    selectedDate: Date | null,
     rangeSelected: RangeSelected
   ): boolean {
     if (this.dateSelector.options.canSelectRange) {
@@ -264,7 +264,7 @@ export class DateSelectorDOM {
           (rangeSelected.end && date.getTime() === rangeSelected.end.getTime())
       );
     } else {
-      return date.getTime() === selectedDate.getTime();
+      return date.getTime() === selectedDate?.getTime();
     }
   }
 
@@ -280,7 +280,7 @@ export class DateSelectorDOM {
   }
 
   private _updateInputValue(
-    selectedDate: Date,
+    selectedDate: Date | null,
     rangeSelected: RangeSelected,
     selectedTime?: { hours: number; minutes: number; seconds: number }
   ): void {
@@ -290,14 +290,16 @@ export class DateSelectorDOM {
         : "NA";
       const endDate = rangeSelected.end ? toIntDate(rangeSelected.end) : "NA";
       this.inputElement.value = `${startDate} - ${endDate}`;
-    } else {
-      this.inputElement.value = selectedTime
+    } else if (selectedDate) {
+      this.inputElement.value = selectedDate
         ? `${toIntDate(selectedDate)} ${
             selectedTime?.hours ? selectedTime?.hours : "00"
           }:${selectedTime?.minutes ? selectedTime?.minutes : "00"}:${
             selectedTime?.seconds ? selectedTime?.seconds : "00"
           }`
         : `${toIntDate(selectedDate)}`;
+    } else {
+      this.inputElement.value = "N/A";
     }
   }
 

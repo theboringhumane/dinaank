@@ -2,7 +2,7 @@ export interface DateSelectorOptions {
     el: string;
     canSelectRange?: boolean;
     closeOnSelect?: boolean;
-    onChange?: (selectedDate: Date, rangeSelected: RangeSelected, selectedTime: { hours: number, minutes: number, seconds: number }) => void;
+    onChange?: (selectedDate: Date | null, rangeSelected: RangeSelected, selectedTime: { hours: number, minutes: number, seconds: number }) => void;
     minDate?: Date;
     maxDate?: Date;
     theme?: 'light' | 'dark';
